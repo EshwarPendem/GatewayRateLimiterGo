@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+      - "3001:3001"
+      - "3002:3002"
+    environment:
+      - CONFIG_PATH=/app/config/config.yaml
+    depends_on:
+      - redis
+    volumes:
+      - ../config:/app/config:ro
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+volumes:
+  redis_data:

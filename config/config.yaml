@@ -1,0 +1,43 @@
+server:
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+
+rate_limiter:
+  algorithm: token_bucket
+  
+  token_bucket:
+    rate: 100
+    capacity: 200
+  
+  sliding_window:
+    window_size: 60s
+    max_requests: 100
+
+jwt:
+  secret: "your-super-secret-key-change-in-production"
+  issuer: "go-rate-limiter-gateway"
+  expiry: 24h
+
+backends:
+  - name: api-service
+    prefix: /api
+    target: http://localhost:3001
+    embedded: true
+    port: 3001
+  - name: auth-service
+    prefix: /auth
+    target: http://localhost:3002
+    embedded: true
+    port: 3002
+
+logging:
+  level: info
+  format: json
