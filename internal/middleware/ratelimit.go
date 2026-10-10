@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"net"
 	"net/http"
+	"strings"
 
 	"github.com/example/go-rate-limiter-gateway/internal/ratelimiter"
 )
@@ -22,14 +24,21 @@ func NewRateLimitMiddleware(limiter ratelimiter.RateLimiter, keyFunc func(r *htt
 }
 
 func DefaultKeyFunc(r *http.Request) string {
-	ip := r.Header.Get("X-Forwarded-For")
-	if ip == "" {
-		ip = r.Header.Get("X-Real-IP")
+	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+		return strings.TrimSpace(strings.Split(forwarded, ",")[0])
 	}
-	if ip == "" {
-		ip = r.RemoteAddr
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		return strings.TrimSpace(realIP)
 	}
-	return ip
+	if r.RemoteAddr == "" {
+		return "unknown"
+	}
+
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		return host
+	}
+	return r.RemoteAddr
 }
 
 func (m *RateLimitMiddleware) Handler(next http.Handler) http.Handler {
