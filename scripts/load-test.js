@@ -26,7 +26,7 @@ const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 let authToken = '';
 
 export function setup() {
-  const tokenRes = http.post(`${BASE_URL}/auth/token`, { user_id: 'load-test-user' });
+  const tokenRes = http.post(`${BASE_URL}/gateway/token`, { user_id: 'load-test-user' });
   if (tokenRes.status === 200) {
     const body = JSON.parse(tokenRes.body);
     return { token: body.token };
@@ -41,7 +41,7 @@ export default function (data) {
   }
 
   const startTime = Date.now();
-  const res = http.get(`${BASE_URL}/api/test`, { headers });
+  const res = http.get(`${BASE_URL}/api/users`, { headers });
   const latency = Date.now() - startTime;
 
   latencyTrend.add(latency);
